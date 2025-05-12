@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partner Game Design Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .question {
+      display: none;
+    }
+    .question.active {
+      display: block;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      margin-top: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .result {
+      display: none;
+      padding: 15px;
+      background-color: #e3ffe3;
+      border: 1px solid #c2e0c2;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎲 Partner Game Design Quiz</h2>
+    <form id="quizForm">
+      <!-- Questions go here -->
+    </form>
+    <div class="result" id="resultBox">
+      <h3>Your Suggested Game Type:</h3>
+      <p id="resultText"></p>
+      <button onclick="restartQuiz()">Retry Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "What do you want your players to feel during your game?",
+        options: [
+          "Like they have to think really hard and plan ahead",
+          "Like they’re laughing, yelling, or freaking out over random stuff",
+          "Like they’re solving a mystery or big problem together",
+          "Like they’re in a race to win before everyone else",
+          "Like they’re in a story or acting as a character",
+          "Like they’re outsmarting or tricking others",
+          "Like they’re working with their team to win",
+          "Like they’re learning something cool or interesting",
+          "Like they’re solving a puzzle or making a cool pattern"
+        ]
+      },
+      {
+        question: "Which game night are you most likely to enjoy?",
+        options: [
+          "Strategy and competition — we want to win by being smart",
+          "Party vibes — quick, silly, and maybe chaotic",
+          "Teamwork — we like helping each other",
+          "Solving stuff — mysteries, riddles, or crime solving",
+          "Storytime — we want to roleplay or build a world",
+          "Brain flex — trivia, facts, or smart questions",
+          "Deceiving people — bluffing, lying, or guessing who’s who",
+          "Fast and wild — quick turns, action, maybe some luck",
+          "Relaxed and thoughtful — like solving a puzzle or placing tiles"
+        ]
+      },
+      {
+        question: "Which of these sounds most fun to make?",
+        options: [
+          "A smart game with cards where planning matters",
+          "A fast-paced card game that’s all about action",
+          "A board where players race to the finish",
+          "A game where everyone is on the same team against the game",
+          "A murder mystery with clues and suspicion",
+          "A trivia-style game that teaches something cool",
+          "A bluffing game where someone’s lying and no one knows who",
+          "A calm game with tiles, shapes, or maps",
+          "A story-based adventure with characters and choices",
+          "A classic strategy game with trading or resources"
+        ]
+      },
+      {
+        question: "How much chaos do you want in your game?",
+        options: [
+          "Maximum chaos — surprise twists, fast turns, and wild moments",
+          "A mix of fun and control — some luck, some strategy",
+          "Mostly planned — we want players to think, not guess",
+          "Not much — we want a smooth, relaxing experience"
+        ]
+      },
+      {
+        question: "How do you want players to interact?",
+        options: [
+          "Working together against the game",
+          "Competing against each other",
+          "Bluffing or tricking each other",
+          "Solving a puzzle or mystery on their own",
+          "Talking, laughing, and doing silly stuff together"
+        ]
+      }
+    ];
+
+    const gameTypes = {
+      "strategic": ["Like they have to think really hard and plan ahead", "Strategy and competition — we want to win by being smart", "A smart game with cards where planning matters", "Mostly planned — we want players to think, not guess"],
+      "fast_card": ["Like they’re laughing, yelling, or freaking out over random stuff", "Party vibes — quick, silly, and maybe chaotic", "A fast-paced card game that’s all about action", "Maximum chaos — surprise twists, fast turns, and wild moments"],
+      "cooperative": ["Like they’re working with their team to win", "Teamwork — we like helping each other", "A game where everyone is on the same team against the game"],
+      "mystery": ["Like they’re solving a mystery or big problem together", "Solving stuff — mysteries, riddles, or crime solving", "A murder mystery with clues and suspicion", "Solving a puzzle or mystery on their own"],
+      "roleplay": ["Like they’re in a story or acting as a character", "Storytime — we want to roleplay or build a world", "A story-based adventure with characters and choices"],
+      "bluff": ["Like they’re outsmarting or tricking others", "Deceiving people — bluffing, lying, or guessing who’s who", "A bluffing game where someone’s lying and no one knows who"],
+      "trivia": ["Like they’re learning something cool or interesting", "Brain flex — trivia, facts, or smart questions", "A trivia-style game that teaches something cool"],
+      "race": ["Like they’re in a race to win before everyone else", "A board where players race to the finish", "Fast and wild — quick turns, action, maybe some luck"],
+      "puzzle": ["Like they’re solving a puzzle or making a cool pattern", "Relaxed and thoughtful — like solving a puzzle or placing tiles", "A calm game with tiles, shapes, or maps"]
+    };
+
+    let currentQuestion = 0;
+    const answers = [];
+
+    const form = document.getElementById("quizForm");
+
+    function showQuestion(index) {
+      form.innerHTML = "";
+      const q = questions[index];
+      const div = document.createElement("div");
+      div.classList.add("question", "active");
+
+      const h3 = document.createElement("h3");
+      h3.textContent = q.question;
+      div.appendChild(h3);
+
+      q.options.forEach((option, i) => {
+        const label = document.createElement("label");
+        label.style.display = "block";
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "q" + index;
+        input.value = option;
+        if (i === 0) input.required = true;
+        label.appendChild(input);
+        label.append(" " + option);
+        div.appendChild(label);
+      });
+
+      const nextBtn = document.createElement("button");
+      nextBtn.type = "submit";
+      nextBtn.textContent = index === questions.length - 1 ? "See Result" : "Next";
+      div.appendChild(nextBtn);
+
+      form.appendChild(div);
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const selected = document.querySelector("input[name='q" + currentQuestion + "']:checked");
+      if (selected) {
+        answers.push(selected.value);
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+          showQuestion(currentQuestion);
+        } else {
+          showResult();
+        }
+      }
+    });
+
+    function showResult() {
+      form.style.display = "none";
+      const resultBox = document.getElementById("resultBox");
+      resultBox.style.display = "block";
+
+      const match = getGameType(answers);
+      document.getElementById("resultText").textContent = match;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      answers.length = 0;
+      form.style.display = "block";
+      document.getElementById("resultBox").style.display = "none";
+      showQuestion(0);
+    }
+
+    function getGameType(answers) {
+      const scores = {
+        "strategic": 0,
+        "fast_card": 0,
+        "cooperative": 0,
+        "mystery": 0,
+        "roleplay": 0,
+        "bluff": 0,
+        "trivia": 0,
+        "race": 0,
+        "puzzle": 0
+      };
+
+      answers.forEach(answer => {
+        for (const type in gameTypes) {
+          if (gameTypes[type].includes(answer)) {
+            scores[type]++;
+          }
+        }
+      });
+
+      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const top = sorted[0][0];
+
+      const labels = {
+        "strategic": "Strategic Card Game or Strategy Board Game",
+        "fast_card": "Fast-Paced Card Game",
+        "cooperative": "Cooperative Adventure Game",
+        "mystery": "Mystery/Detective Game",
+        "roleplay": "Story-Based Roleplaying Game",
+        "bluff": "Bluffing & Social Deduction Game",
+        "trivia": "Trivia or Knowledge Game",
+        "race": "Race-to-the-End Board Game",
+        "puzzle": "Tile-Placement or Puzzle Game"
+      };
+
+      return labels[top];
+    }
+
+    // Start quiz
+    showQuestion(0);
+  </script>
+</body>
+</html>
